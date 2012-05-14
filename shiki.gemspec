@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["oame@oameya.com"]
   gem.description   = %q{The "Unidentified" Bot Framework}
   gem.summary       = %q{The "Unidentified" Bot Framework for Twitter.}
-  gem.homepage      = ""
+  gem.homepage      = "http://oame.github.com/shiki"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
