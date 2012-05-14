@@ -35,11 +35,7 @@ Examples
       
       use :memory, :database => "databases/memory/memory.db"
       
-      event :follow do |user|
-        puts "Follow catched!"
-      end
-      
-      event :mention, :from => "o_ame" do |status|
+      event :mention do |status|
         user = memory.remember :person => status.user
         if user.replied_average_time < 40
           tweet = "頻繁にリプ飛ばしてくるの、正直鬱陶しいんです。やめてください"
