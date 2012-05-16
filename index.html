@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>式(Shiki) beta by oame</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>式(Shiki) beta</h1>
+        <p>The &quot;Unidentified&quot; Bot Framework for Twitter, written in Ruby.</p>
+        <p class="view"><a href="https://github.com/oame/shiki">View the Project on GitHub <small>oame/shiki</small></a></p>
+        <ul>
+          <li><a href="https://github.com/oame/shiki/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/oame/shiki/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/oame/shiki">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>式(Shiki)はTwitter Botを作成するためのイベントドリブンモデルのフレームワークです。</p>
+
+<h2>主な特徴</h2>
+
+<ul>
+<li>イベントドリブンモデルの記法</li>
+<li>Pupilとの統合によりTwitter APIをRubyライクな文法で呼び出しできます(Pupilとは式のために作られたTwitter APIラッパーのこと)</li>
+<li>札(Fuda)プラグインを追加することで機能拡張ができます</li>
+</ul><h2>必要なもの</h2>
+
+<ul>
+<li>pupil, json, oauth gem</li>
+<li>Ruby 1.9.x</li>
+</ul><h2>導入方法</h2>
+
+<pre><code>gem install shiki
+</code></pre>
+
+<h2>サンプル</h2>
+
+<p>頻繁にリプライを送ってくる迷惑ユーザーに苦言を呈するBotの例(メリーさんBot)</p>
+
+<pre><code>require "shiki"
+
+OAUTH_KEY = {
+    :consumer_key =&gt; "something",       # Required
+    :consumer_secret =&gt; "something"     # Required
+    :access_token =&gt; "something",       # Required
+    :access_token_secret =&gt; "something" # Required
+}
+
+class Merry &lt; Shiki::Base # クラス全体でひとつのBotとして抽象化する
+  set :oauth_key, OAUTH_KEY
+
+  use :memory, :on =&gt; "databases/memory/memory.db" # Memory.rb Plug-in
+
+  event :mention do |status|
+    user = memory.remember :person =&gt; status.user # Memoryからユーザーを呼び出し
+    if user.replied_average_time &lt; 40 # 平均リプライ頻度が40秒以内の時
+      status.user.reply("頻繁にリプ飛ばしてくるの、正直鬱陶しいんです。やめてください")
+    end
+  end
+end
+
+merry = Merry.new
+merry.run
+</code></pre>
+
+<p>自動でフォロー返ししつつ挨拶も送る気さくなBotの例(おおあめさんBot)</p>
+
+<pre><code>require "shiki"
+
+OAUTH_KEY = {
+    :consumer_key =&gt; "something",       # Required
+    :consumer_secret =&gt; "something"     # Required
+    :access_token =&gt; "something",       # Required
+    :access_token_secret =&gt; "something" # Required
+}
+
+class Oame &lt; Shiki::Base
+  set :oauth_key, OAUTH_KEY
+
+  event :follow do |user|
+    user.follow
+    user.reply("フォローありがと！#{user.name}って呼べばいいのかしら？よろしくね！")
+  end
+end
+
+oame = Oame.new
+oame.run
+</code></pre>
+
+<p>リプライをオウム返しするBotの例(響子さんBot)</p>
+
+<pre><code>require "shiki"
+
+OAUTH_KEY = {
+    :consumer_key =&gt; "something",       # Required
+    :consumer_secret =&gt; "something"     # Required
+    :access_token =&gt; "something",       # Required
+    :access_token_secret =&gt; "something" # Required
+}
+
+class Kyoko &lt; Shiki::Base
+  set :oauth_key, OAUTH_KEY
+
+  event :mention do |status|
+    if status.text =~ /いちたすいちはー/
+      status.user.reply("・・・") # 算数は苦手
+    else
+      status.user.reply(status.text) # 山彦なので
+    end
+  end
+end
+
+kyoko = Kyoko.new
+kyoko.run
+</code></pre>
+
+<h2>Credits</h2>
+
+<p>Developer: <a href="http://twitter.com/o_ame">Oame</a></p>
+
+<h2>License</h2>
+
+<p>Copyright (c) 2011 Oame. See LICENSE.txt for
+further details.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/oame">oame</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
