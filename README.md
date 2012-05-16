@@ -24,8 +24,8 @@ Examples
 	require "shiki"
 
 	OAUTH_KEY = {
-		:consumer_key => "something",   	  # Required
-		:consumer_secret => "something"		  # Required
+		:consumer_key => "something",   	# Required
+		:consumer_secret => "something"		# Required
 		:access_token => "something",       # Required
 		:access_token_secret => "something" # Required
 	}
