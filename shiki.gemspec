@@ -16,6 +16,8 @@ Gem::Specification.new do |gem|
   gem.version       = Shiki::VERSION
   gem.add_dependency "json"
   gem.add_dependency "oauth"
+  gem.add_dependency "highline"
+  gem.add_dependency "slop"
   gem.add_dependency "pupil"
   gem.add_development_dependency "rspec"
 end

@@ -1,0 +1,134 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+require "shiki"
+require "pupil/keygen"
+require "yaml"
+require "fileutils"
+require "readline"
+require "slop"
+require "highline"
+require "pp"
+
+class String
+  def undent
+    gsub /^.{#{slice(/^ +/).length}}/, ''
+  end
+end
+
+def show_help(option=nil)
+  helps = {
+  :main => "
+  Usage: shiki [COMMAND] [OPTIONS]
+      g, generate\tGenerate command.
+      -v, --version\tShow version.
+      -h, --help\tDisplay this help message.
+  ".undent,
+  :generate => "
+  Usage: shiki generate [OPTION]
+      bot\tGenerate Shiki bot from template.
+  ".undent
+  }
+  puts option ? helps[option.to_sym] : helps[:main]
+end
+
+ShikiTemplates = {
+:main =>
+%{#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require "shiki"
+
+OAUTH_KEY = {
+  :consumer_key => "[CONSUMER_KEY]",
+  :consumer_secret => "[CONSUMER_SECRET]",
+  :access_token => "[ACCESS_TOKEN]",
+  :access_token_secret => "[ACCESS_TOKEN_SECRET]"
+}
+
+class [NAME_CAP] < Shiki::Base
+  set :oauth_key, OAUTH_KEY
+  
+  [FUDA_INCLUDE]
+  
+  [EVENTS]
+end
+
+[NAME] = [NAME_CAP].new
+[NAME].run
+},
+:fat_events =>
+%{event :follow do |user|
+    user.follow #=> Follow back
+    user.reply "Nice to meet you!"
+  end
+  
+  event :status do |status|
+    
+  end
+  
+  event :mention do |mention|
+    
+  end},
+:gemfile =>
+%{source "http://rubygems.org"
+
+gem "shiki"
+}
+}
+
+opts = Slop.parse(:help => true) do
+  on :v, :version do
+    puts %{Shiki, the "Unidentified" Bot Framework | Version: #{Shiki::VERSION}}
+  end
+  
+  on :h, :help do
+    show_help
+  end
+  
+  # generate bot only
+  on :p, :fuda=
+  on :f, :fat
+end
+
+command, *option = ARGV
+case command.to_sym
+when :generate, :g
+  case option[0].to_sym
+  when :bot
+    name = option[1]
+    #tokens = Pupil::Keygen.new.interactive
+    tokens = {
+      :consumer_key => "CLx9l7nB88DIPBJJHmxlw",
+      :consumer_secret => "A1wUEd1ECWxGvh8Hf2IT1uKIcyR9jCnig3UX1qyc",
+      :access_token => "90842418-5WISPLRA1zDtvgmiXm6tJ1j4g6rjtRx2HOZx98hoF",
+      :access_token_secret => "lwycdFg4ERnjzo4szZmmdQ11ZLv3Hfa0hioOHnuzFMI"
+    }
+    fudas = opts.fuda? ? "use :#{opts[:fuda]}" : "# use :something, :option => ..."
+    events = opts.fat? ? ShikiTemplates[:fat_events] : "# event :name do |status| ... end"
+    template = ShikiTemplates[:main]
+    {
+      "[CONSUMER_KEY]" => tokens[:consumer_key],
+      "[CONSUMER_SECRET]" => tokens[:consumer_secret],
+      "[ACCESS_TOKEN]" => tokens[:access_token],
+      "[ACCESS_TOKEN_SECRET]" => tokens[:access_token_secret],
+      "[NAME]" => name,
+      "[NAME_CAP]" => name.capitalize,
+      "[FUDA_INCLUDE]" => fudas,
+      "[EVENTS]" => events
+    }.each do |key, value|
+      template.gsub!(key, value)
+    end
+    
+    h = HighLine.new
+    cli_create = "\t#{h.color("create", :green, HighLine::BOLD)}\t%s"
+    Dir.mkdir(name) unless FileTest.exists? name
+    puts cli_create % name
+    File.open(File.join(name, "bot.rb"), "w"){|f| f.puts template}
+    puts cli_create % "#{name}/bot.rb"
+    File.open(File.join(name, "Gemfile"), "w"){|f| f.puts ShikiTemplates[:gemfile]}
+    puts cli_create % "#{name}/Gemfile"
+  end
+when :help, :h
+  show_help(option.first)
+end

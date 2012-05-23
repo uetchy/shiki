@@ -173,9 +173,9 @@ module Shiki
         end
       end
 
-      def enable(fuda, option)
+      def enable(fuda, option={})
+        # e.g. enable :auto_follow
         # Not implement
-        # e.g. auto_follow
       end
 
       def event(action, option=nil, &block)
