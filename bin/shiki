@@ -53,9 +53,6 @@ class [NAME_CAP] < Shiki::Base
   
   [EVENTS]
 end
-
-[NAME] = [NAME_CAP].new
-[NAME].run
 },
 :fat_events =>
 %{event :follow do |user|
@@ -74,6 +71,13 @@ end
 %{source "http://rubygems.org"
 
 gem "shiki"
+},
+:bootrb =>
+%{require "shiki"
+require File.expand_path("../../bot", __FILE__)
+
+[NAME] = [NAME_CAP].new
+[NAME].run
 }
 }
 
@@ -93,6 +97,13 @@ end
 
 command, *option = ARGV
 case command.to_sym
+when :start, :s, :run
+  begin
+    ruby_path = `which ruby`.strip
+    system("#{ruby_path} config/boot.rb")
+  rescue => e
+    puts "Error raised"
+  end
 when :generate, :g
   case option[0].to_sym
   when :bot
@@ -106,7 +117,7 @@ when :generate, :g
     }
     fudas = opts.fuda? ? "use :#{opts[:fuda]}" : "# use :something, :option => ..."
     events = opts.fat? ? ShikiTemplates[:fat_events] : "# event :name do |status| ... end"
-    template = ShikiTemplates[:main]
+    templates = ShikiTemplates
     {
       "[CONSUMER_KEY]" => tokens[:consumer_key],
       "[CONSUMER_SECRET]" => tokens[:consumer_secret],
@@ -116,17 +127,23 @@ when :generate, :g
       "[NAME_CAP]" => name.capitalize,
       "[FUDA_INCLUDE]" => fudas,
       "[EVENTS]" => events
-    }.each do |key, value|
-      template.gsub!(key, value)
+    }.each do |reg, replacement|
+      templates.each do |key, template|
+        template.gsub!(reg, replacement)
+      end
     end
     
     h = HighLine.new
     cli_create = "\t#{h.color("create", :green, HighLine::BOLD)}\t%s"
     Dir.mkdir(name) unless FileTest.exists? name
     puts cli_create % name
-    File.open(File.join(name, "bot.rb"), "w"){|f| f.puts template}
+    File.open(File.join(name, "bot.rb"), "w"){|f| f.puts templates[:main]}
     puts cli_create % "#{name}/bot.rb"
-    File.open(File.join(name, "Gemfile"), "w"){|f| f.puts ShikiTemplates[:gemfile]}
+    Dir.mkdir(File.join(name, "config")) unless FileTest.exists? File.join(name, "config")
+    puts cli_create % "#{name}/config"
+    File.open(File.join(name, "config", "boot.rb"), "w"){|f| f.puts templates[:bootrb]}
+    puts cli_create % "#{name}/config/boot.rb"
+    File.open(File.join(name, "Gemfile"), "w"){|f| f.puts templates[:gemfile]}
     puts cli_create % "#{name}/Gemfile"
   end
 when :help, :h
