@@ -1,17 +1,9 @@
 module Shiki
   class Fuda
-    def initialize()
-      super()
-    end
+    @make_instance = true
     
-    def self.prepare
-      {
-        :make_instance => true
-      }
-    end
-    
-    def self.depends
-      []
+    def initialize(option)
+      
     end
   end
 end

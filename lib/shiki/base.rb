@@ -162,20 +162,19 @@ module Shiki
       end
 
       def use(name, option=nil)
-        require(File.join(File.dirname(File.expand_path($0)), "fuda/#{name}"))
+        require File.expand_path("../../fuda/#{name}/#{name}", $0)
         fuda = eval("#{name.capitalize}")
         @@env[:fuda] ||= {}
-        if fuda.prepare[:make_instance]
-          @@env[:fuda].update(name.to_sym => {:block => fuda.new(option), :option => option, :instance => true})
-        else
-          @@env[:fuda].update(name.to_sym => {:block => fuda, :option => option, :instance => false})
-          eval("#{name.capitalize}.new(#{option})")
-        end
+        @@env[:fuda].update(name.to_sym => {:block => fuda.prepare(option), :option => option})
       end
-
-      def enable(fuda, option={})
+      
+      def enable(func, option={})
         # e.g. enable :auto_follow
         # Not implement
+        case func.to_sym
+        when :auto_follow
+          
+        end
       end
 
       def event(action, option=nil, &block)
@@ -185,9 +184,11 @@ module Shiki
 
       def method_missing(action, *option)
         @@env[:fuda].each do |name, option|
-          return option[:block] if action == name && option[:instance]
+          p action
+          p name
+          return option[:block] if action == name
         end
-        raise NoMethodError
+        #raise NoMethodError
       end
       
       # Bot methods
